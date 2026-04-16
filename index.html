@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iFood Benefits | Simulador de Jornada</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body { font-family: 'DM Sans', sans-serif; background-color: #F8FAFC; }
+        .ifood-red { color: #EA1D2C; }
+        .bg-ifood-red { background-color: #EA1D2C; }
+        .path-line { 
+            position: absolute; 
+            left: 20px; 
+            top: 0; 
+            bottom: 0; 
+            width: 4px; 
+            background: #E2E8F0; 
+            z-index: 0;
+        }
+        .path-progress {
+            position: absolute; 
+            left: 20px; 
+            top: 0; 
+            width: 4px; 
+            background: #EA1D2C; 
+            z-index: 1;
+            transition: height 0.5s ease;
+        }
+        .node-active { border-color: #EA1D2C !important; background-color: #EA1D2C !important; color: white !important; }
+        .card-selected { border-color: #EA1D2C !important; background-color: #FFF1F2 !important; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #EA1D2C; border-radius: 10px; }
+    </style>
+</head>
+<body class="text-slate-900">
+
+    <div class="flex h-screen overflow-hidden">
+        
+        <!-- SIDEBAR DE SELEÇÃO (A TRILHA) -->
+        <aside class="w-full md:w-2/3 overflow-y-auto p-8 relative bg-white shadow-xl">
+            <header class="mb-12">
+                <div class="flex items-center gap-3 mb-4">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/a/af/Ifood_logo.svg" alt="iFood Logo" class="h-6">
+                    <span class="text-xs font-bold uppercase tracking-widest text-slate-400">Benefits Strategist</span>
+                </div>
+                <h1 class="text-4xl font-bold mb-4">Seu Caminho da <span class="ifood-red italic">Vida</span></h1>
+                <p class="text-slate-500">Selecione os momentos que você está vivendo ou planeja viver. Veja como nosso algoritmo de benefícios se adapta a você.</p>
+            </header>
+
+            <div class="relative pl-12">
+                <div class="path-line"></div>
+                <div id="progress-line" class="path-progress" style="height: 0%"></div>
+
+                <!-- CATEGORIA: INDEPENDÊNCIA -->
+                <div class="mb-16">
+                    <h2 class="flex items-center gap-3 text-lg font-bold mb-6">
+                        <span class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500"><i data-lucide="home" class="w-5 h-5"></i></span>
+                        Independência & Moradia
+                    </h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="cat-independencia">
+                        <!-- Itens inseridos via JS -->
+                    </div>
+                </div>
+
+                <!-- CATEGORIA: CONEXÕES -->
+                <div class="mb-16">
+                    <h2 class="flex items-center gap-3 text-lg font-bold mb-6">
+                        <span class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500"><i data-lucide="heart" class="w-5 h-5"></i></span>
+                        Relacionamentos & Família
+                    </h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="cat-conexoes">
+                        <!-- Itens inseridos via JS -->
+                    </div>
+                </div>
+
+                <!-- CATEGORIA: CARREIRA -->
+                <div class="mb-16">
+                    <h2 class="flex items-center gap-3 text-lg font-bold mb-6">
+                        <span class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500"><i data-lucide="trending-up" class="w-5 h-5"></i></span>
+                        Carreira & Evolução
+                    </h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="cat-carreira">
+                        <!-- Itens inseridos via JS -->
+                    </div>
+                </div>
+
+                <!-- CATEGORIA: SAÚDE -->
+                <div class="mb-16">
+                    <h2 class="flex items-center gap-3 text-lg font-bold mb-6">
+                        <span class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500"><i data-lucide="activity" class="w-5 h-5"></i></span>
+                        Saúde & Bem-estar
+                    </h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="cat-saude">
+                        <!-- Itens inseridos via JS -->
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- PAINEL DE RESULTADOS (O "CARRINHO ESTRATÉGICO") -->
+        <main class="hidden md:flex flex-col w-1/3 bg-slate-900 text-white p-8 overflow-y-auto">
+            <h2 class="text-xl font-bold mb-8 flex items-center gap-3">
+                <i data-lucide="shopping-bag" class="ifood-red"></i> Seu Menu Personalizado
+            </h2>
+
+            <div id="empty-state" class="flex-1 flex flex-col items-center justify-center text-center p-6 border-2 border-dashed border-slate-800 rounded-3xl">
+                <i data-lucide="mouse-pointer-2" class="w-12 h-12 text-slate-700 mb-4 animate-bounce"></i>
+                <p class="text-slate-500 text-sm">Selecione marcos na trilha ao lado para ver a mágica dos benefícios acontecer.</p>
+            </div>
+
+            <div id="results-content" class="hidden space-y-6">
+                <!-- Benefícios Agregados -->
+                <div id="active-benefits" class="space-y-4">
+                    <!-- Cards de Benefícios Gerados -->
+                </div>
+
+                <div class="pt-8 mt-8 border-t border-slate-800">
+                    <h3 class="text-xs font-bold uppercase tracking-widest text-slate-500 mb-4">Impacto Estratégico</h3>
+                    <div class="bg-slate-800 p-4 rounded-2xl">
+                        <p class="text-sm text-slate-300 leading-relaxed italic" id="strategic-insight">
+                            "A vida é dinâmica. Seu plano de benefícios no iFood também."
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- MOBILE OVERLAY PARA RESULTADOS -->
+    <div class="md:hidden fixed bottom-6 right-6 z-50">
+        <button onclick="toggleMobileResults()" class="w-16 h-16 bg-ifood-red text-white rounded-full shadow-2xl flex items-center justify-center">
+            <i data-lucide="shopping-bag"></i>
+            <span id="mobile-count" class="absolute -top-1 -right-1 bg-white text-red-600 font-bold text-xs w-6 h-6 rounded-full flex items-center justify-center shadow-md">0</span>
+        </button>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        const milestones = [
+            // INDEPENDÊNCIA
+            { id: 1, title: "Saiu da casa dos pais", cat: "independencia", benefit: "Mobilidade Urbano", trigger: "Eleição Semestral", insight: "27% da base (Gen Z) usa este marco para priorizar cartões de transporte." },
+            { id: 2, title: "Passou a morar sozinho", cat: "independencia", benefit: "Leggal Jurídico", trigger: "Acesso Imediato", insight: "Consultoria jurídica para contratos de aluguel e vistorias sem custo extra." },
+            { id: 3, title: "Mudou de cidade/país", cat: "independencia", benefit: "Subsídio Mudança", trigger: "Evento de Vida", insight: "Readequação de rede credenciada de saúde baseada na nova geolocalização." },
+            { id: 4, title: "Comprou seu 1º imóvel", cat: "independencia", benefit: "Stay Financeiro", trigger: "Consultoria", insight: "Planejamento para quitação de financiamento e proteção patrimonial." },
+            
+            // CONEXÕES
+            { id: 5, title: "Casou ou Morar Junto", cat: "conexoes", benefit: "Inclusão Cônjuge", trigger: "Eleição Familiar", insight: "Inclusão em Saúde e Odonto com subsídio imediato de 12 meses." },
+            { id: 6, title: "Teve um Filho (Bio ou Adoção)", cat: "conexoes", icon: "baby", benefit: "Kit Baby + Creche", trigger: "Gatilho Familiar", insight: "Apoio financeiro mensal para educação infantil até 6 anos." },
+            { id: 7, title: "Adotou um Pet", cat: "conexoes", benefit: "MeuPet (Porto)", trigger: "Eleição Anual", insight: "488 FoodLovers consideram o pet como dependente primário na rede Porto." },
+            { id: 8, title: "Cuidador de pais idosos", cat: "conexoes", benefit: "Reembolso Flex Pais", trigger: "Grade 13+", insight: "Cuidado da 'geração sanduíche' através de aporte em plano médico sênior." },
+
+            // CARREIRA
+            { id: 9, title: "Recebeu Promoção", cat: "carreira", benefit: "Upgrade Sem Carência", trigger: "Eleição Promoção", insight: "A janela de 3 dias que 'quebra' a regra de carência de 12 meses do plano de saúde." },
+            { id: 10, title: "Começou um MBA / Pós", cat: "carreira", benefit: "Reembolso Educação", trigger: "Ajuste de Pontos", insight: "Converter sobras de alimentação/saúde em pagamento de mensalidade escolar." },
+            { id: 11, title: "Virou Liderança", cat: "carreira", benefit: "Seguro Vida 36x", trigger: "Grade 13+", insight: "Aumento do capital segurado proporcional à nova responsabilidade financeira." },
+
+            // SAÚDE
+            { id: 12, title: "Recebeu diagnóstico crônico", cat: "saude", benefit: "Vida Link 50%", trigger: "Farmácia", insight: "Subsídio automático em medicamentos para hipertensão, diabetes e asma." },
+            { id: 13, title: "Foco em Saúde Mental", cat: "saude", benefit: "Wellhub + Terapia", trigger: "Livre Escolha", insight: "Utilização do Reembolso Flex para coparticipação em sessões de psicologia." },
+            { id: 14, title: "Identidade Pessoal", cat: "saude", benefit: "Nome Social", trigger: "Ajuste Administrativo", desc: "Suporte completo para transição e inclusão de nome social em todos os cartões." }
+        ];
+
+        let selectedIds = new Set();
+
+        function renderMilestones() {
+            milestones.forEach(m => {
+                const container = document.getElementById(`cat-${m.cat}`);
+                if (!container) return;
+
+                const card = document.createElement('div');
+                card.className = `p-4 border border-slate-200 rounded-2xl cursor-pointer transition-all hover:border-red-200 flex items-start gap-3 bg-white group`;
+                card.dataset.id = m.id;
+                card.onclick = () => toggleMilestone(m.id);
+                card.innerHTML = `
+                    <div class="w-6 h-6 rounded-full border-2 border-slate-200 flex items-center justify-center shrink-0 mt-1 transition-all group-hover:border-red-300">
+                        <i data-lucide="check" class="w-4 h-4 text-white opacity-0"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-sm text-slate-700">${m.title}</h4>
+                        <p class="text-[10px] text-slate-400 font-bold uppercase mt-1 tracking-wider">${m.benefit}</p>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+            lucide.createIcons();
+        }
+
+        function toggleMilestone(id) {
+            const card = document.querySelector(`[data-id="${id}"]`);
+            if (selectedIds.has(id)) {
+                selectedIds.delete(id);
+                card.classList.remove('card-selected');
+                card.querySelector('div').classList.remove('node-active');
+                card.querySelector('i').classList.add('opacity-0');
+            } else {
+                selectedIds.add(id);
+                card.classList.add('card-selected');
+                card.querySelector('div').classList.add('node-active');
+                card.querySelector('i').classList.remove('opacity-0');
+            }
+            updateResults();
+        }
+
+        function updateResults() {
+            const emptyState = document.getElementById('empty-state');
+            const resultsContent = document.getElementById('results-content');
+            const activeBenefits = document.getElementById('active-benefits');
+            const mobileCount = document.getElementById('mobile-count');
+            const progressLine = document.getElementById('progress-line');
+
+            mobileCount.innerText = selectedIds.size;
+
+            if (selectedIds.size === 0) {
+                emptyState.classList.remove('hidden');
+                resultsContent.classList.add('hidden');
+                progressLine.style.height = '0%';
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            resultsContent.classList.remove('hidden');
+            activeBenefits.innerHTML = '';
+
+            // Atualizar barra de progresso (estimativa baseada no maior ID selecionado)
+            const maxId = Math.max(...Array.from(selectedIds));
+            const progressPct = (maxId / milestones.length) * 100;
+            progressLine.style.height = `${progressPct}%`;
+
+            selectedIds.forEach(id => {
+                const m = milestones.find(item => item.id === id);
+                const benefitCard = document.createElement('div');
+                benefitCard.className = 'bg-slate-800 p-5 rounded-2xl border-l-4 border-ifood-red animate-fade-in';
+                benefitCard.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-xs font-bold text-red-400 uppercase tracking-widest">${m.trigger}</span>
+                        <i data-lucide="sparkles" class="w-3 h-3 text-red-400"></i>
+                    </div>
+                    <h3 class="font-bold text-white mb-1">${m.benefit}</h3>
+                    <p class="text-xs text-slate-400 leading-relaxed">${m.insight}</p>
+                `;
+                activeBenefits.appendChild(benefitCard);
+            });
+
+            // Insight Dinâmico Final
+            const insights = [
+                "Você está construindo uma rede de segurança familiar robusta.",
+                "Seu foco atual é aceleração de carreira e mobilidade.",
+                "Seu menu reflete uma transição importante para a autonomia financeira.",
+                "Sua jornada prioriza o cuidado preventivo e a saúde integral."
+            ];
+            document.getElementById('strategic-insight').innerText = insights[selectedIds.size % insights.length];
+            
+            lucide.createIcons();
+        }
+
+        function toggleMobileResults() {
+            // No mobile, apenas um aviso de que os resultados estão no painel lateral
+            alert(`Você tem ${selectedIds.size} benefícios ativos na sua jornada!`);
+        }
+
+        renderMilestones();
+    </script>
+
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in { animation: fadeIn 0.3s ease forwards; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+    </style>
+</body>
+</html>
